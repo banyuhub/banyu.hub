@@ -485,7 +485,10 @@ function Window.Create(options)
         TextXAlignment = Enum.TextXAlignment.Right,
     })
 
-    local closeButton = Components.CreateButton(
+    -- Declare before the callback so it captures the correct local variable.
+    local floatingBar
+
+    Components.CreateButton(
         header,
         Theme,
         "X",
@@ -557,7 +560,10 @@ function Window.Create(options)
     })
 
     local pageTitle = Components.CreateLabel(
-        content, Theme, "Home", {
+        content,
+        Theme,
+        "Home",
+        {
             Name = "PageTitle",
             Position = UDim2.fromOffset(22, 16),
             Size = UDim2.new(1, -44, 0, 30),
@@ -567,7 +573,10 @@ function Window.Create(options)
     )
 
     local pageSubtitle = Components.CreateLabel(
-        content, Theme, "Welcome to NYU HUB", {
+        content,
+        Theme,
+        "Welcome to NYU HUB",
+        {
             Name = "PageSubtitle",
             Position = UDim2.fromOffset(22, 45),
             Size = UDim2.new(1, -44, 0, 20),
@@ -614,15 +623,28 @@ function Window.Create(options)
         end
 
         if pageName == "Home" then
-            Home.Render(pageContainer, Theme, Components, options.GameInfo)
+            Home.Render(
+                pageContainer,
+                Theme,
+                Components,
+                options.GameInfo
+            )
         elseif pageName == "Features" then
             Features.Render(
-                pageContainer, Theme, Components, options.GameModule
+                pageContainer,
+                Theme,
+                Components,
+                options.GameModule
             )
         elseif pageName == "Settings" then
-            Settings.Render(pageContainer, Theme, Components, {
-                Version = options.Version or "1.0.0",
-            })
+            Settings.Render(
+                pageContainer,
+                Theme,
+                Components,
+                {
+                    Version = options.Version or "1.0.0",
+                }
+            )
         end
     end
 
@@ -643,7 +665,8 @@ function Window.Create(options)
             {
                 Name = item.Name .. "Button",
                 Position = UDim2.fromOffset(
-                    10, 48 + ((index - 1) * 44)
+                    10,
+                    48 + ((index - 1) * 44)
                 ),
                 Size = UDim2.new(1, -20, 0, 36),
                 BackgroundColor3 = Theme.Colors.Background,
@@ -657,8 +680,8 @@ function Window.Create(options)
         navigationButtons[item.Name] = button
     end
 
-    -- Floating bar, shown when the main window is minimized.
-    local floatingBar = Instance.new("TextButton")
+    -- Floating bar
+    floatingBar = Instance.new("TextButton")
     floatingBar.Name = "FloatingBar"
     floatingBar.Size = UDim2.fromOffset(260, 54)
     floatingBar.Position = UDim2.new(0.5, -130, 0, 18)
@@ -732,7 +755,7 @@ function Window.Create(options)
 
     floatingBar.Parent = screenGui
 
-    -- Drag and resize controller.
+    -- Drag and resize controller
     local interaction = nil
     local wasDragged = false
 
@@ -787,6 +810,7 @@ function Window.Create(options)
 
         if interaction.Mode == "drag" then
             local startPos = interaction.StartPosition
+
             interaction.Target.Position = UDim2.new(
                 startPos.X.Scale,
                 startPos.X.Offset + delta.X,
@@ -795,11 +819,17 @@ function Window.Create(options)
             )
         elseif interaction.Mode == "resize" then
             local startSize = interaction.StartSize
+
             local width = math.clamp(
-                startSize.X.Offset + delta.X, 560, 1100
+                startSize.X.Offset + delta.X,
+                560,
+                1100
             )
+
             local height = math.clamp(
-                startSize.Y.Offset + delta.Y, 360, 800
+                startSize.Y.Offset + delta.Y,
+                360,
+                800
             )
 
             root.Size = UDim2.fromOffset(width, height)
@@ -816,7 +846,7 @@ function Window.Create(options)
         end
     end)
 
-    -- Resize handle in the bottom-right corner.
+    -- Resize handle
     local resizeHandle = Instance.new("TextButton")
     resizeHandle.Name = "ResizeHandle"
     resizeHandle.Size = UDim2.fromOffset(22, 22)
@@ -834,6 +864,7 @@ function Window.Create(options)
         beginInteraction(input, root, "resize")
     end)
 
+    -- Open the main window from the floating bar.
     floatingBar.Activated:Connect(function()
         if wasDragged then
             return
@@ -860,7 +891,6 @@ function Window.Create(options)
 end
 
 return Window
-
 end
 
 -- ===== MODULE: ui.pages.home =====
