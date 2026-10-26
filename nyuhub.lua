@@ -230,39 +230,33 @@ end
 -- ===== MODULE: ui.theme =====
 __factories["ui.theme"] = function()
 
---[[
-    NYU HUB
-    File: ui/theme.lua
-    Description: Tema visual untuk custom UI.
-]]
-
 local Theme = {
-    Name = "NYU HUB Default",
+    Name = "NYU HUB Monochrome",
 
     Colors = {
-        Background = Color3.fromRGB(247, 247, 245),
-        Surface = Color3.fromRGB(255, 255, 255),
+        Background = Color3.fromRGB(0, 0, 0),       -- #000000
+        Surface = Color3.fromRGB(38, 38, 38),       -- #262626
+        Primary = Color3.fromRGB(255, 255, 255),    -- #FFFFFF
 
-        Primary = Color3.fromRGB(31, 41, 55),
-        Secondary = Color3.fromRGB(80, 109, 132),
+        Text = Color3.fromRGB(255, 255, 255),       -- #FFFFFF
+        Muted = Color3.fromRGB(190, 190, 190),
+        Border = Color3.fromRGB(38, 38, 38),        -- #262626
+        Disabled = Color3.fromRGB(38, 38, 38),      -- #262626
 
-        Text = Color3.fromRGB(31, 41, 55),
-        Muted = Color3.fromRGB(107, 114, 134),
-
-        Border = Color3.fromRGB(231, 229, 228),
-        Disabled = Color3.fromRGB(231, 229, 228),
+        ButtonText = Color3.fromRGB(0, 0, 0),       -- #000000
+        ButtonBackground = Color3.fromRGB(255, 255, 255),
+        ButtonDisabledText = Color3.fromRGB(190, 190, 190),
     },
 
     Sizes = {
-        WindowWidth = 720,
-        WindowHeight = 460,
-
-        SidebarWidth = 160,
-        HeaderHeight = 52,
+        WindowWidth = 760,
+        WindowHeight = 480,
+        SidebarWidth = 170,
+        HeaderHeight = 56,
 
         CornerRadius = 10,
         BorderThickness = 1,
-        Padding = 12,
+        Padding = 14,
     },
 
     Font = Enum.Font.Gotham,
@@ -279,33 +273,45 @@ end
 -- ===== MODULE: ui.components =====
 __factories["ui.components"] = function()
 
---[[
-    NYU HUB
-    File: ui/components.lua
-    Description: Komponen dasar custom UI.
-]]
-
 local Components = {}
-
-local function createCorner(parent, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius or 10)
-    corner.Parent = parent
-
-    return corner
-end
 
 function Components.CreateFrame(parent, theme, properties)
     local frame = Instance.new("Frame")
 
-    frame.BackgroundColor3 = theme.Colors.Surface
+    frame.Name = properties.Name or "Frame"
+    frame.Size = properties.Size or UDim2.fromOffset(100, 100)
+    frame.Position = properties.Position or UDim2.fromOffset(0, 0)
+    frame.BackgroundColor3 =
+        properties.BackgroundColor3 or theme.Colors.Surface
+    frame.BackgroundTransparency =
+        properties.BackgroundTransparency or 0
     frame.BorderSizePixel = 0
+    frame.ClipsDescendants = properties.ClipsDescendants or false
+    frame.AnchorPoint = properties.AnchorPoint or Vector2.zero
+    frame.LayoutOrder = properties.LayoutOrder or 0
+    frame.Visible = properties.Visible ~= false
+    frame.ZIndex = properties.ZIndex or 1
 
-    for property, value in pairs(properties or {}) do
-        frame[property] = value
+    for property, value in pairs(properties) do
+        if property ~= "Name"
+            and property ~= "Parent"
+            and property ~= "CornerRadius"
+            and property ~= "BorderRadius"
+            and property ~= "Stroke"
+            and property ~= "BorderColor3" then
+
+            pcall(function()
+                frame[property] = value
+            end)
+        end
     end
 
-    createCorner(frame, theme.Sizes.CornerRadius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(
+        0,
+        properties.CornerRadius or theme.Sizes.CornerRadius
+    )
+    corner.Parent = frame
 
     frame.Parent = parent
 
@@ -313,19 +319,27 @@ function Components.CreateFrame(parent, theme, properties)
 end
 
 function Components.CreateLabel(parent, theme, text, properties)
+    properties = properties or {}
+
     local label = Instance.new("TextLabel")
-
+    label.Name = properties.Name or "Label"
+    label.Text = tostring(text or "")
+    label.Size = properties.Size or UDim2.fromOffset(100, 24)
+    label.Position = properties.Position or UDim2.fromOffset(0, 0)
     label.BackgroundTransparency = 1
-    label.Text = text or ""
-    label.TextColor3 = theme.Colors.Text
-    label.Font = theme.Font
-    label.TextSize = 14
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.TextYAlignment = Enum.TextYAlignment.Center
-
-    for property, value in pairs(properties or {}) do
-        label[property] = value
-    end
+    label.BorderSizePixel = 0
+    label.TextColor3 = properties.TextColor3 or theme.Colors.Text
+    label.Font = properties.Font or theme.Font
+    label.TextSize = properties.TextSize or 13
+    label.TextXAlignment =
+        properties.TextXAlignment or Enum.TextXAlignment.Left
+    label.TextYAlignment =
+        properties.TextYAlignment or Enum.TextYAlignment.Center
+    label.TextWrapped = properties.TextWrapped or false
+    label.TextTruncate = properties.TextTruncate or Enum.TextTruncate.None
+    label.RichText = properties.RichText or false
+    label.LayoutOrder = properties.LayoutOrder or 0
+    label.ZIndex = properties.ZIndex or 2
 
     label.Parent = parent
 
@@ -333,25 +347,44 @@ function Components.CreateLabel(parent, theme, text, properties)
 end
 
 function Components.CreateButton(parent, theme, text, callback, properties)
+    properties = properties or {}
+
     local button = Instance.new("TextButton")
-
-    button.BackgroundColor3 = theme.Colors.Background
+    button.Name = properties.Name or "Button"
+    button.Text = tostring(text or "")
+    button.Size = properties.Size or UDim2.fromOffset(120, 36)
+    button.Position = properties.Position or UDim2.fromOffset(0, 0)
+    button.BackgroundColor3 =
+        properties.BackgroundColor3 or theme.Colors.ButtonBackground
+    button.TextColor3 =
+        properties.TextColor3 or theme.Colors.ButtonText
+    button.Font = properties.Font or Enum.Font.GothamMedium
+    button.TextSize = properties.TextSize or 12
+    button.TextXAlignment =
+        properties.TextXAlignment or Enum.TextXAlignment.Center
+    button.TextYAlignment =
+        properties.TextYAlignment or Enum.TextYAlignment.Center
     button.BorderSizePixel = 0
-    button.Text = text or "Button"
-    button.TextColor3 = theme.Colors.Text
-    button.Font = theme.Font
-    button.TextSize = 14
     button.AutoButtonColor = true
+    button.LayoutOrder = properties.LayoutOrder or 0
+    button.ZIndex = properties.ZIndex or 3
 
-    for property, value in pairs(properties or {}) do
-        button[property] = value
-    end
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(
+        0,
+        properties.CornerRadius or theme.Sizes.CornerRadius
+    )
+    corner.Parent = button
 
-    createCorner(button, theme.Sizes.CornerRadius)
+    button.Activated:Connect(function()
+        if type(callback) == "function" then
+            local success, err = pcall(callback)
 
-    if type(callback) == "function" then
-        button.Activated:Connect(callback)
-    end
+            if not success then
+                warn("[NYU HUB] Button error: " .. tostring(err))
+            end
+        end
+    end)
 
     button.Parent = parent
 
@@ -360,9 +393,10 @@ end
 
 function Components.CreateStroke(parent, theme)
     local stroke = Instance.new("UIStroke")
-
     stroke.Color = theme.Colors.Border
     stroke.Thickness = theme.Sizes.BorderThickness
+    stroke.Transparency = 0
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = parent
 
     return stroke
@@ -375,86 +409,139 @@ end
 -- ===== MODULE: ui.window =====
 __factories["ui.window"] = function()
 
---[[
-    NYU HUB
-    File: ui/window.lua
-    Description: Window utama dan navigasi halaman.
-]]
-
 local Theme = __require("ui.theme")
 local Components = __require("ui.components")
-
 local Home = __require("ui.pages.home")
 local Features = __require("ui.pages.features")
 local Settings = __require("ui.pages.settings")
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 
 local Window = {}
 
 function Window.Create(options)
     options = options or {}
 
-    local player = game:GetService("Players").LocalPlayer
+    local player = Players.LocalPlayer
     local playerGui = player:WaitForChild("PlayerGui")
 
-    -- Hapus UI lama jika ada.
     local existing = playerGui:FindFirstChild("NyuHubUI")
     if existing then
         existing:Destroy()
     end
+
+    local windowWidth = Theme.Sizes.WindowWidth
+    local windowHeight = Theme.Sizes.WindowHeight
+    local versionText = "v" .. tostring(options.Version or "1.0.0")
 
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "NyuHubUI"
     screenGui.ResetOnSpawn = false
     screenGui.IgnoreGuiInset = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.DisplayOrder = 10
 
+    -- Main window
     local root = Components.CreateFrame(screenGui, Theme, {
         Name = "Window",
-        Size = UDim2.fromOffset(
-            Theme.Sizes.WindowWidth,
-            Theme.Sizes.WindowHeight
-        ),
+        Size = UDim2.fromOffset(windowWidth, windowHeight),
         Position = UDim2.new(
-            0.5,
-            -Theme.Sizes.WindowWidth / 2,
-            0.5,
-            -Theme.Sizes.WindowHeight / 2
+            0.5, -windowWidth / 2,
+            0.5, -windowHeight / 2
         ),
+        AnchorPoint = Vector2.zero,
         BackgroundColor3 = Theme.Colors.Background,
+        CornerRadius = 12,
+        ClipsDescendants = true,
     })
 
     Components.CreateStroke(root, Theme)
 
-    -- Header.
+    -- Header
     local header = Components.CreateFrame(root, Theme, {
         Name = "Header",
         Size = UDim2.new(1, 0, 0, Theme.Sizes.HeaderHeight),
         Position = UDim2.fromOffset(0, 0),
-        BackgroundColor3 = Theme.Colors.Surface,
+        BackgroundColor3 = Theme.Colors.Background,
+        CornerRadius = 0,
     })
+    header.Active = true
 
     Components.CreateLabel(header, Theme, "NYU HUB", {
         Name = "Title",
-        Position = UDim2.fromOffset(16, 0),
-        Size = UDim2.new(1, -32, 1, 0),
+        Position = UDim2.fromOffset(20, 0),
+        Size = UDim2.new(0.6, -20, 1, 0),
         Font = Enum.Font.GothamBold,
         TextSize = 17,
     })
 
-    -- Sidebar.
+    Components.CreateLabel(header, Theme, versionText, {
+        Name = "Version",
+        Position = UDim2.new(1, -112, 0, 0),
+        Size = UDim2.fromOffset(65, Theme.Sizes.HeaderHeight),
+        TextColor3 = Theme.Colors.Muted,
+        TextSize = 11,
+        TextXAlignment = Enum.TextXAlignment.Right,
+    })
+
+    local closeButton = Components.CreateButton(
+        header,
+        Theme,
+        "X",
+        function()
+            root.Visible = false
+            floatingBar.Visible = true
+        end,
+        {
+            Name = "MinimizeButton",
+            Position = UDim2.new(1, -40, 0, 12),
+            Size = UDim2.fromOffset(28, 28),
+            BackgroundColor3 = Theme.Colors.Surface,
+            TextColor3 = Theme.Colors.Text,
+            TextSize = 12,
+            CornerRadius = 8,
+        }
+    )
+
+    local headerDivider = Instance.new("Frame")
+    headerDivider.Name = "HeaderDivider"
+    headerDivider.Position = UDim2.new(0, 0, 1, -1)
+    headerDivider.Size = UDim2.new(1, 0, 0, 1)
+    headerDivider.BackgroundColor3 = Theme.Colors.Border
+    headerDivider.BorderSizePixel = 0
+    headerDivider.Parent = header
+
+    -- Sidebar
     local sidebar = Components.CreateFrame(root, Theme, {
         Name = "Sidebar",
         Position = UDim2.fromOffset(0, Theme.Sizes.HeaderHeight),
         Size = UDim2.new(
-            0,
-            Theme.Sizes.SidebarWidth,
-            1,
-            -Theme.Sizes.HeaderHeight
+            0, Theme.Sizes.SidebarWidth,
+            1, -Theme.Sizes.HeaderHeight
         ),
-        BackgroundColor3 = Theme.Colors.Surface,
+        BackgroundColor3 = Theme.Colors.Background,
+        CornerRadius = 0,
     })
 
-    -- Area konten.
+    Components.CreateLabel(sidebar, Theme, "MENU", {
+        Name = "MenuLabel",
+        Position = UDim2.fromOffset(18, 16),
+        Size = UDim2.new(1, -36, 0, 22),
+        Font = Enum.Font.GothamBold,
+        TextSize = 10,
+        TextColor3 = Theme.Colors.Muted,
+    })
+
+    local sidebarDivider = Instance.new("Frame")
+    sidebarDivider.Name = "SidebarDivider"
+    sidebarDivider.Position = UDim2.new(1, -1, 0, 0)
+    sidebarDivider.Size = UDim2.new(0, 1, 1, 0)
+    sidebarDivider.BackgroundColor3 = Theme.Colors.Border
+    sidebarDivider.BorderSizePixel = 0
+    sidebarDivider.Parent = sidebar
+
+    -- Main content
     local content = Components.CreateFrame(root, Theme, {
         Name = "Content",
         Position = UDim2.fromOffset(
@@ -462,30 +549,42 @@ function Window.Create(options)
             Theme.Sizes.HeaderHeight
         ),
         Size = UDim2.new(
-            1,
-            -Theme.Sizes.SidebarWidth,
-            1,
-            -Theme.Sizes.HeaderHeight
+            1, -Theme.Sizes.SidebarWidth,
+            1, -Theme.Sizes.HeaderHeight
         ),
         BackgroundColor3 = Theme.Colors.Background,
+        CornerRadius = 0,
     })
 
-    local pageTitle = Components.CreateLabel(content, Theme, "Home", {
-        Name = "PageTitle",
-        Position = UDim2.fromOffset(20, 16),
-        Size = UDim2.new(1, -40, 0, 30),
-        Font = Enum.Font.GothamBold,
-        TextSize = 20,
-    })
+    local pageTitle = Components.CreateLabel(
+        content, Theme, "Home", {
+            Name = "PageTitle",
+            Position = UDim2.fromOffset(22, 16),
+            Size = UDim2.new(1, -44, 0, 30),
+            Font = Enum.Font.GothamBold,
+            TextSize = 20,
+        }
+    )
+
+    local pageSubtitle = Components.CreateLabel(
+        content, Theme, "Welcome to NYU HUB", {
+            Name = "PageSubtitle",
+            Position = UDim2.fromOffset(22, 45),
+            Size = UDim2.new(1, -44, 0, 20),
+            TextSize = 11,
+            TextColor3 = Theme.Colors.Muted,
+        }
+    )
 
     local pageContainer = Components.CreateFrame(content, Theme, {
         Name = "PageContainer",
         Position = UDim2.fromOffset(0, 0),
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
+        CornerRadius = 0,
     })
 
-    local currentPage = nil
+    local currentPage
     local navigationButtons = {}
 
     local function clearPage()
@@ -497,77 +596,254 @@ function Window.Create(options)
     local function showPage(pageName)
         clearPage()
         currentPage = pageName
-
         pageTitle.Text = pageName
 
-        -- Tandai tombol halaman aktif.
+        if pageName == "Home" then
+            pageSubtitle.Text = "Welcome to NYU HUB"
+        elseif pageName == "Features" then
+            pageSubtitle.Text = "Manage your game features"
+        elseif pageName == "Settings" then
+            pageSubtitle.Text = "Customize your experience"
+        end
+
         for name, button in pairs(navigationButtons) do
-            button.BackgroundColor3 =
-                name == pageName
-                and Theme.Colors.Disabled
+            button.BackgroundColor3 = name == pageName
+                and Theme.Colors.Surface
                 or Theme.Colors.Background
+            button.TextColor3 = Theme.Colors.Text
         end
 
         if pageName == "Home" then
-            Home.Render(
-                pageContainer,
-                Theme,
-                Components,
-                options.GameInfo
-            )
-
+            Home.Render(pageContainer, Theme, Components, options.GameInfo)
         elseif pageName == "Features" then
             Features.Render(
-                pageContainer,
-                Theme,
-                Components,
-                options.GameModule
+                pageContainer, Theme, Components, options.GameModule
             )
-
         elseif pageName == "Settings" then
-            Settings.Render(
-                pageContainer,
-                Theme,
-                Components,
-                {
-                    Version = options.Version or "1.0.0",
-                }
-            )
+            Settings.Render(pageContainer, Theme, Components, {
+                Version = options.Version or "1.0.0",
+            })
         end
     end
 
     local navigation = {
-        "Home",
-        "Features",
-        "Settings",
+        { Name = "Home", Label = "Home" },
+        { Name = "Features", Label = "Features" },
+        { Name = "Settings", Label = "Settings" },
     }
 
-    for index, pageName in ipairs(navigation) do
+    for index, item in ipairs(navigation) do
         local button = Components.CreateButton(
             sidebar,
             Theme,
-            "   " .. pageName,
+            item.Label,
             function()
-                showPage(pageName)
+                showPage(item.Name)
             end,
             {
-                Name = pageName .. "Button",
+                Name = item.Name .. "Button",
                 Position = UDim2.fromOffset(
-                    10,
-                    16 + ((index - 1) * 44)
+                    10, 48 + ((index - 1) * 44)
                 ),
                 Size = UDim2.new(1, -20, 0, 36),
+                BackgroundColor3 = Theme.Colors.Background,
+                TextColor3 = Theme.Colors.Text,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                TextSize = 13,
+                TextSize = 12,
+                CornerRadius = 7,
             }
         )
 
-        navigationButtons[pageName] = button
+        navigationButtons[item.Name] = button
     end
 
-    screenGui.Parent = playerGui
+    -- Floating bar, shown when the main window is minimized.
+    local floatingBar = Instance.new("TextButton")
+    floatingBar.Name = "FloatingBar"
+    floatingBar.Size = UDim2.fromOffset(260, 54)
+    floatingBar.Position = UDim2.new(0.5, -130, 0, 18)
+    floatingBar.BackgroundColor3 = Theme.Colors.Surface
+    floatingBar.BackgroundTransparency = 0
+    floatingBar.BorderSizePixel = 0
+    floatingBar.Text = ""
+    floatingBar.AutoButtonColor = false
+    floatingBar.Visible = false
+    floatingBar.Active = true
+    floatingBar.ZIndex = 5
 
-    -- Tampilkan halaman Home saat pertama dibuka.
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 27)
+    barCorner.Parent = floatingBar
+
+    local barStroke = Instance.new("UIStroke")
+    barStroke.Color = Theme.Colors.Border
+    barStroke.Thickness = 1
+    barStroke.Parent = floatingBar
+
+    local logo = Instance.new("Frame")
+    logo.Name = "Logo"
+    logo.Position = UDim2.fromOffset(12, 12)
+    logo.Size = UDim2.fromOffset(30, 30)
+    logo.BackgroundColor3 = Theme.Colors.Primary
+    logo.BorderSizePixel = 0
+    logo.ZIndex = 6
+    logo.Parent = floatingBar
+
+    local logoCorner = Instance.new("UICorner")
+    logoCorner.CornerRadius = UDim.new(1, 0)
+    logoCorner.Parent = logo
+
+    local logoText = Instance.new("TextLabel")
+    logoText.Name = "LogoText"
+    logoText.Size = UDim2.fromScale(1, 1)
+    logoText.BackgroundTransparency = 1
+    logoText.Text = "N"
+    logoText.TextColor3 = Theme.Colors.ButtonText
+    logoText.Font = Enum.Font.GothamBold
+    logoText.TextSize = 16
+    logoText.ZIndex = 7
+    logoText.Parent = logo
+
+    local barTitle = Instance.new("TextLabel")
+    barTitle.Name = "HubName"
+    barTitle.Position = UDim2.fromOffset(52, 9)
+    barTitle.Size = UDim2.new(1, -64, 0, 20)
+    barTitle.BackgroundTransparency = 1
+    barTitle.Text = "NYU HUB"
+    barTitle.TextColor3 = Theme.Colors.Text
+    barTitle.Font = Enum.Font.GothamBold
+    barTitle.TextSize = 13
+    barTitle.TextXAlignment = Enum.TextXAlignment.Left
+    barTitle.ZIndex = 6
+    barTitle.Parent = floatingBar
+
+    local barVersion = Instance.new("TextLabel")
+    barVersion.Name = "Version"
+    barVersion.Position = UDim2.fromOffset(52, 28)
+    barVersion.Size = UDim2.new(1, -64, 0, 15)
+    barVersion.BackgroundTransparency = 1
+    barVersion.Text = versionText
+    barVersion.TextColor3 = Theme.Colors.Muted
+    barVersion.Font = Enum.Font.Gotham
+    barVersion.TextSize = 10
+    barVersion.TextXAlignment = Enum.TextXAlignment.Left
+    barVersion.ZIndex = 6
+    barVersion.Parent = floatingBar
+
+    floatingBar.Parent = screenGui
+
+    -- Drag and resize controller.
+    local interaction = nil
+    local wasDragged = false
+
+    local function beginInteraction(input, target, mode)
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1
+            and input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+
+        interaction = {
+            Target = target,
+            Mode = mode,
+            InputType = input.UserInputType,
+            StartInput = input.Position,
+            StartPosition = target.Position,
+            StartSize = target.Size,
+        }
+
+        wasDragged = false
+    end
+
+    header.InputBegan:Connect(function(input)
+        beginInteraction(input, root, "drag")
+    end)
+
+    floatingBar.InputBegan:Connect(function(input)
+        beginInteraction(input, floatingBar, "drag")
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if not interaction then
+            return
+        end
+
+        local isMouseMove =
+            interaction.InputType == Enum.UserInputType.MouseButton1
+            and input.UserInputType == Enum.UserInputType.MouseMovement
+
+        local isTouchMove =
+            interaction.InputType == Enum.UserInputType.Touch
+            and input.UserInputType == Enum.UserInputType.Touch
+
+        if not isMouseMove and not isTouchMove then
+            return
+        end
+
+        local delta = input.Position - interaction.StartInput
+
+        if delta.Magnitude > 5 then
+            wasDragged = true
+        end
+
+        if interaction.Mode == "drag" then
+            local startPos = interaction.StartPosition
+            interaction.Target.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        elseif interaction.Mode == "resize" then
+            local startSize = interaction.StartSize
+            local width = math.clamp(
+                startSize.X.Offset + delta.X, 560, 1100
+            )
+            local height = math.clamp(
+                startSize.Y.Offset + delta.Y, 360, 800
+            )
+
+            root.Size = UDim2.fromOffset(width, height)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if not interaction then
+            return
+        end
+
+        if input.UserInputType == interaction.InputType then
+            interaction = nil
+        end
+    end)
+
+    -- Resize handle in the bottom-right corner.
+    local resizeHandle = Instance.new("TextButton")
+    resizeHandle.Name = "ResizeHandle"
+    resizeHandle.Size = UDim2.fromOffset(22, 22)
+    resizeHandle.Position = UDim2.new(1, -22, 1, -22)
+    resizeHandle.BackgroundColor3 = Theme.Colors.Surface
+    resizeHandle.Text = "↘"
+    resizeHandle.TextColor3 = Theme.Colors.Text
+    resizeHandle.TextSize = 13
+    resizeHandle.BorderSizePixel = 0
+    resizeHandle.AutoButtonColor = false
+    resizeHandle.ZIndex = 10
+    resizeHandle.Parent = root
+
+    resizeHandle.InputBegan:Connect(function(input)
+        beginInteraction(input, root, "resize")
+    end)
+
+    floatingBar.Activated:Connect(function()
+        if wasDragged then
+            return
+        end
+
+        floatingBar.Visible = false
+        root.Visible = true
+    end)
+
+    screenGui.Parent = playerGui
     showPage("Home")
 
     return {
@@ -575,8 +851,8 @@ function Window.Create(options)
         Root = root,
         Sidebar = sidebar,
         Content = content,
+        FloatingBar = floatingBar,
         ShowPage = showPage,
-
         GetCurrentPage = function()
             return currentPage
         end,
