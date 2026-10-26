@@ -466,6 +466,7 @@ function Window.Create(options)
     local header = Components.CreateFrame(root, Theme, {
         Name = "Header",
         Size = UDim2.new(1, 0, 0, Theme.Sizes.HeaderHeight),
+        BackgroundTransparency = 1,
         BackgroundColor3 = Theme.Colors.Background,
         CornerRadius = 0,
     })
@@ -959,23 +960,40 @@ function Window.Create(options)
         end
     end)
 
-    -- Resize handle
-    local resizeHandle = Instance.new("TextButton")
-    resizeHandle.Name = "ResizeHandle"
-    resizeHandle.Size = UDim2.fromOffset(22, 22)
-    resizeHandle.Position = UDim2.new(1, -22, 1, -22)
-    resizeHandle.BackgroundColor3 = Theme.Colors.SurfaceActive
-    resizeHandle.Text = "↘"
-    resizeHandle.TextColor3 = Theme.Colors.Muted
-    resizeHandle.TextSize = 12
-    resizeHandle.BorderSizePixel = 0
-    resizeHandle.AutoButtonColor = false
-    resizeHandle.ZIndex = 10
-    resizeHandle.Parent = root
 
-    local resizeCorner = Instance.new("UICorner")
-    resizeCorner.CornerRadius = UDim.new(0, 5)
-    resizeCorner.Parent = resizeHandle
+-- Resize handle
+local resizeHandle = Instance.new("TextButton")
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Size = UDim2.fromOffset(22, 22)
+resizeHandle.Position = UDim2.new(1, -22, 1, -22)
+resizeHandle.BackgroundTransparency = 1
+resizeHandle.Text = ""
+resizeHandle.BorderSizePixel = 0
+resizeHandle.AutoButtonColor = false
+resizeHandle.ZIndex = 10
+resizeHandle.Parent = root
+
+    -- Three subtle diagonal grip lines
+    for index = 1, 3 do
+        local grip = Instance.new("Frame")
+        grip.Name = "GripLine" .. index
+        grip.AnchorPoint = Vector2.new(0.5, 0.5)
+        grip.Size = UDim2.fromOffset(2, 6)
+        grip.Position = UDim2.fromOffset(
+            8 + ((index - 1) * 4),
+            14
+        )
+        grip.Rotation = 45
+        grip.BackgroundColor3 = Theme.Colors.Muted
+        grip.BackgroundTransparency = 0.15
+        grip.BorderSizePixel = 0
+        grip.ZIndex = 11
+        grip.Parent = resizeHandle
+    end
+
+    resizeHandle.InputBegan:Connect(function(input)
+        beginInteraction(input, root, "resize")
+    end)
 
     resizeHandle.InputBegan:Connect(function(input)
         beginInteraction(input, root, "resize")
