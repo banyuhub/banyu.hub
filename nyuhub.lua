@@ -1350,6 +1350,21 @@ function NYUHub.Start(dependencies)
     }
 end
 
+local function getGameId()
+    local success, gameId = pcall(function()
+        return game.GameId
+    end)
+
+    print("[NYU HUB] GameId:", game.GameId)
+    print("[NYU HUB] PlaceId:", game.PlaceId)
+
+    if not success or type(gameId) ~= "number" then
+        return nil, "Tidak dapat membaca GameId."
+    end
+
+    return gameId
+end
+
 return NYUHub
 
 end
