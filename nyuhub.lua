@@ -25,7 +25,7 @@ local Games = {
         Id = 123974602339071,
         Name = "Just a baseplate",
         Module = "game1",
-        Enabled = false,
+        Enabled = true,
     },
     {
         Id = nil,
@@ -1231,7 +1231,6 @@ __factories["main"] = function()
 
 --[[
     NYU HUB
-    File: main.lua
     Description: Entry point utama NYU HUB.
 ]]
 
@@ -1244,16 +1243,16 @@ local function log(message)
     print("[NYU HUB] " .. tostring(message))
 end
 
-local function getGameId()
-    local success, gameId = pcall(function()
-        return game.GameId
+local function getPlaceId()
+    local success, placeId = pcall(function()
+        return game.PlaceId
     end)
 
-    if not success or type(gameId) ~= "number" then
-        return nil, "Tidak dapat membaca GameId."
+    if not success or type(placeId) ~= "number" then
+        return nil, "Tidak dapat membaca PlaceId."
     end
 
-    return gameId
+    return placeId
 end
 
 function NYUHub.Start(dependencies)
@@ -1265,7 +1264,6 @@ function NYUHub.Start(dependencies)
     local registry = dependencies.Registry
     local loader = dependencies.Loader
 
-    -- Validasi dependensi.
     if type(config) ~= "table"
         or type(detector) ~= "table"
         or type(windowModule) ~= "table"
@@ -1277,22 +1275,20 @@ function NYUHub.Start(dependencies)
 
     log("Starting version " .. NYUHub.Version .. "...")
 
-    -- Deteksi pengalaman Roblox.
-    local gameId, gameIdError = getGameId()
+    local placeId, placeIdError = getPlaceId()
 
-    if not gameId then
-        log(gameIdError)
-        return false, gameIdError
+    if not placeId then
+        log(placeIdError)
+        return false, placeIdError
     end
 
-    log("GameId: " .. tostring(gameId))
+    log("PlaceId: " .. tostring(placeId))
 
-    local gameConfig, detectError = detector.Detect(config, gameId)
+    local gameConfig, detectError = detector.Detect(config, placeId)
 
     if not gameConfig then
         log(detectError)
 
-        -- Tetap buka UI agar status game bisa dilihat.
         windowModule.Create({
             Version = NYUHub.Version,
             GameInfo = {
@@ -1308,6 +1304,7 @@ function NYUHub.Start(dependencies)
 
     if not gameModule then
         local message = "Modul game belum terdaftar."
+
         log(message)
 
         windowModule.Create({
@@ -1318,12 +1315,11 @@ function NYUHub.Start(dependencies)
         return false, message
     end
 
-    -- Inisialisasi modul yang cocok dengan game.
     local initialized, initResult = loader.Init(
         gameConfig,
         gameModule,
         {
-            GameId = gameId,
+            PlaceId = placeId,
             GameConfig = gameConfig,
         }
     )
@@ -1333,7 +1329,6 @@ function NYUHub.Start(dependencies)
         return false, initResult
     end
 
-    -- UI hanya menerima modul untuk game yang terdeteksi.
     local window = windowModule.Create({
         Version = NYUHub.Version,
         GameInfo = gameConfig,
@@ -1348,21 +1343,6 @@ function NYUHub.Start(dependencies)
         GameModule = gameModule,
         InitResult = initResult,
     }
-end
-
-local function getGameId()
-    local success, gameId = pcall(function()
-        return game.GameId
-    end)
-
-    print("[NYU HUB] GameId:", game.GameId)
-    print("[NYU HUB] PlaceId:", game.PlaceId)
-
-    if not success or type(gameId) ~= "number" then
-        return nil, "Tidak dapat membaca GameId."
-    end
-
-    return gameId
 end
 
 return NYUHub
