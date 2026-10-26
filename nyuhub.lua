@@ -676,7 +676,8 @@ function Window.Create(options)
                 pageContainer,
                 Theme,
                 Components,
-                options.GameInfo
+                options.GameInfo,
+                options.GameModule
             )
         elseif pageName == "Features" then
             Features.Render(
