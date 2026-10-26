@@ -229,34 +229,41 @@ end
 
 -- ===== MODULE: ui.theme =====
 __factories["ui.theme"] = function()
-
 local Theme = {
-    Name = "NYU HUB Monochrome",
+    Name = "NYU HUB Minimal",
 
     Colors = {
-        Background = Color3.fromRGB(0, 0, 0),       -- #000000
-        Surface = Color3.fromRGB(38, 38, 38),       -- #262626
-        Primary = Color3.fromRGB(255, 255, 255),    -- #FFFFFF
+        Background = Color3.fromRGB(0, 0, 0),
+        Surface = Color3.fromRGB(18, 18, 18),
+        SurfaceHover = Color3.fromRGB(32, 32, 32),
+        SurfaceActive = Color3.fromRGB(38, 38, 38),
 
-        Text = Color3.fromRGB(255, 255, 255),       -- #FFFFFF
-        Muted = Color3.fromRGB(190, 190, 190),
-        Border = Color3.fromRGB(38, 38, 38),        -- #262626
-        Disabled = Color3.fromRGB(38, 38, 38),      -- #262626
+        Primary = Color3.fromRGB(255, 255, 255),
+        Text = Color3.fromRGB(245, 245, 245),
+        Muted = Color3.fromRGB(155, 155, 155),
 
-        ButtonText = Color3.fromRGB(0, 0, 0),       -- #000000
+        Border = Color3.fromRGB(43, 43, 43),
+        Disabled = Color3.fromRGB(65, 65, 65),
+
+        ButtonText = Color3.fromRGB(0, 0, 0),
         ButtonBackground = Color3.fromRGB(255, 255, 255),
-        ButtonDisabledText = Color3.fromRGB(190, 190, 190),
+        ButtonDisabledText = Color3.fromRGB(155, 155, 155),
     },
 
     Sizes = {
         WindowWidth = 760,
         WindowHeight = 480,
+
         SidebarWidth = 170,
-        HeaderHeight = 56,
+        HeaderHeight = 54,
 
         CornerRadius = 10,
+        CardRadius = 10,
+        ButtonRadius = 7,
+
         BorderThickness = 1,
-        Padding = 14,
+        Padding = 16,
+        ContentPadding = 20,
     },
 
     Font = Enum.Font.Gotham,
@@ -267,7 +274,6 @@ local Theme = {
 }
 
 return Theme
-
 end
 
 -- ===== MODULE: ui.components =====
@@ -408,7 +414,6 @@ end
 
 -- ===== MODULE: ui.window =====
 __factories["ui.window"] = function()
-
 local Theme = __require("ui.theme")
 local Components = __require("ui.components")
 local Home = __require("ui.pages.home")
@@ -450,7 +455,6 @@ function Window.Create(options)
             0.5, -windowWidth / 2,
             0.5, -windowHeight / 2
         ),
-        AnchorPoint = Vector2.zero,
         BackgroundColor3 = Theme.Colors.Background,
         CornerRadius = 12,
         ClipsDescendants = true,
@@ -462,48 +466,75 @@ function Window.Create(options)
     local header = Components.CreateFrame(root, Theme, {
         Name = "Header",
         Size = UDim2.new(1, 0, 0, Theme.Sizes.HeaderHeight),
-        Position = UDim2.fromOffset(0, 0),
         BackgroundColor3 = Theme.Colors.Background,
         CornerRadius = 0,
     })
+
     header.Active = true
+
+    -- Brand mark
+    local brandMark = Components.CreateFrame(header, Theme, {
+        Name = "BrandMark",
+        Position = UDim2.fromOffset(18, 13),
+        Size = UDim2.fromOffset(28, 28),
+        BackgroundColor3 = Theme.Colors.Primary,
+        CornerRadius = 8,
+    })
+
+    Components.CreateLabel(brandMark, Theme, "N", {
+        Name = "BrandLetter",
+        Size = UDim2.fromScale(1, 1),
+        Font = Enum.Font.GothamBold,
+        TextSize = 16,
+        TextColor3 = Theme.Colors.ButtonText,
+        TextXAlignment = Enum.TextXAlignment.Center,
+    })
 
     Components.CreateLabel(header, Theme, "NYU HUB", {
         Name = "Title",
-        Position = UDim2.fromOffset(20, 0),
-        Size = UDim2.new(0.6, -20, 1, 0),
+        Position = UDim2.fromOffset(56, 7),
+        Size = UDim2.fromOffset(110, 23),
         Font = Enum.Font.GothamBold,
-        TextSize = 17,
+        TextSize = 14,
+    })
+
+    Components.CreateLabel(header, Theme, "SCRIPT HUB", {
+        Name = "BrandSubtitle",
+        Position = UDim2.fromOffset(57, 28),
+        Size = UDim2.fromOffset(100, 14),
+        Font = Enum.Font.Gotham,
+        TextSize = 9,
+        TextColor3 = Theme.Colors.Muted,
     })
 
     Components.CreateLabel(header, Theme, versionText, {
         Name = "Version",
-        Position = UDim2.new(1, -112, 0, 0),
-        Size = UDim2.fromOffset(65, Theme.Sizes.HeaderHeight),
+        Position = UDim2.new(1, -102, 0, 0),
+        Size = UDim2.fromOffset(56, Theme.Sizes.HeaderHeight),
         TextColor3 = Theme.Colors.Muted,
-        TextSize = 11,
+        TextSize = 10,
         TextXAlignment = Enum.TextXAlignment.Right,
     })
 
-    -- Declare before the callback so it captures the correct local variable.
+    -- Declare before callback to preserve the local reference.
     local floatingBar
 
     Components.CreateButton(
         header,
         Theme,
-        "X",
+        "—",
         function()
             root.Visible = false
             floatingBar.Visible = true
         end,
         {
             Name = "MinimizeButton",
-            Position = UDim2.new(1, -40, 0, 12),
-            Size = UDim2.fromOffset(28, 28),
-            BackgroundColor3 = Theme.Colors.Surface,
+            Position = UDim2.new(1, -38, 0, 13),
+            Size = UDim2.fromOffset(26, 26),
+            BackgroundColor3 = Theme.Colors.SurfaceActive,
             TextColor3 = Theme.Colors.Text,
-            TextSize = 12,
-            CornerRadius = 8,
+            TextSize = 15,
+            CornerRadius = 7,
         }
     )
 
@@ -527,12 +558,12 @@ function Window.Create(options)
         CornerRadius = 0,
     })
 
-    Components.CreateLabel(sidebar, Theme, "MENU", {
+    Components.CreateLabel(sidebar, Theme, "WORKSPACE", {
         Name = "MenuLabel",
-        Position = UDim2.fromOffset(18, 16),
-        Size = UDim2.new(1, -36, 0, 22),
+        Position = UDim2.fromOffset(18, 18),
+        Size = UDim2.new(1, -30, 0, 18),
         Font = Enum.Font.GothamBold,
-        TextSize = 10,
+        TextSize = 9,
         TextColor3 = Theme.Colors.Muted,
     })
 
@@ -544,7 +575,7 @@ function Window.Create(options)
     sidebarDivider.BorderSizePixel = 0
     sidebarDivider.Parent = sidebar
 
-    -- Main content
+    -- Content area
     local content = Components.CreateFrame(root, Theme, {
         Name = "Content",
         Position = UDim2.fromOffset(
@@ -562,24 +593,24 @@ function Window.Create(options)
     local pageTitle = Components.CreateLabel(
         content,
         Theme,
-        "Home",
+        "Overview",
         {
             Name = "PageTitle",
             Position = UDim2.fromOffset(22, 16),
-            Size = UDim2.new(1, -44, 0, 30),
+            Size = UDim2.new(1, -44, 0, 27),
             Font = Enum.Font.GothamBold,
-            TextSize = 20,
+            TextSize = 19,
         }
     )
 
     local pageSubtitle = Components.CreateLabel(
         content,
         Theme,
-        "Welcome to NYU HUB",
+        "Your workspace at a glance.",
         {
             Name = "PageSubtitle",
-            Position = UDim2.fromOffset(22, 45),
-            Size = UDim2.new(1, -44, 0, 20),
+            Position = UDim2.fromOffset(22, 43),
+            Size = UDim2.new(1, -44, 0, 18),
             TextSize = 11,
             TextColor3 = Theme.Colors.Muted,
         }
@@ -608,18 +639,36 @@ function Window.Create(options)
         pageTitle.Text = pageName
 
         if pageName == "Home" then
-            pageSubtitle.Text = "Welcome to NYU HUB"
+            pageTitle.Text = "Overview"
+            pageSubtitle.Text = "Your workspace at a glance."
         elseif pageName == "Features" then
-            pageSubtitle.Text = "Manage your game features"
+            pageSubtitle.Text = "Manage available game features."
         elseif pageName == "Settings" then
-            pageSubtitle.Text = "Customize your experience"
+            pageSubtitle.Text = "Configure your hub experience."
         end
 
         for name, button in pairs(navigationButtons) do
-            button.BackgroundColor3 = name == pageName
-                and Theme.Colors.Surface
+            local selected = name == pageName
+
+            button.BackgroundColor3 = selected
+                and Theme.Colors.SurfaceActive
                 or Theme.Colors.Background
-            button.TextColor3 = Theme.Colors.Text
+
+            button.TextColor3 = selected
+                and Theme.Colors.Text
+                or Theme.Colors.Muted
+
+            local icon = button:FindFirstChild("NavIcon")
+            if icon then
+                icon.TextColor3 = selected
+                    and Theme.Colors.Text
+                    or Theme.Colors.Muted
+            end
+
+            local indicator = button:FindFirstChild("ActiveIndicator")
+            if indicator then
+                indicator.Visible = selected
+            end
         end
 
         if pageName == "Home" then
@@ -648,10 +697,11 @@ function Window.Create(options)
         end
     end
 
+    -- Navigation with compact text icons.
     local navigation = {
-        { Name = "Home", Label = "Home" },
-        { Name = "Features", Label = "Features" },
-        { Name = "Settings", Label = "Settings" },
+        { Name = "Home", Label = "Overview", Icon = "⌂" },
+        { Name = "Features", Label = "Features", Icon = "◇" },
+        { Name = "Settings", Label = "Settings", Icon = "⚙" },
     }
 
     for index, item in ipairs(navigation) do
@@ -665,28 +715,90 @@ function Window.Create(options)
             {
                 Name = item.Name .. "Button",
                 Position = UDim2.fromOffset(
-                    10,
-                    48 + ((index - 1) * 44)
+                    9,
+                    48 + ((index - 1) * 42)
                 ),
-                Size = UDim2.new(1, -20, 0, 36),
+                Size = UDim2.new(1, -18, 0, 35),
                 BackgroundColor3 = Theme.Colors.Background,
-                TextColor3 = Theme.Colors.Text,
+                TextColor3 = Theme.Colors.Muted,
                 TextXAlignment = Enum.TextXAlignment.Left,
-                TextSize = 12,
+                TextSize = 11,
                 CornerRadius = 7,
             }
         )
 
+        button.Text = ""
+        button.AutoButtonColor = false
+
+        local icon = Components.CreateLabel(
+            button,
+            Theme,
+            item.Icon,
+            {
+                Name = "NavIcon",
+                Position = UDim2.fromOffset(10, 0),
+                Size = UDim2.fromOffset(22, 35),
+                TextColor3 = Theme.Colors.Muted,
+                TextSize = 15,
+                TextXAlignment = Enum.TextXAlignment.Center,
+            }
+        )
+
+        icon.BackgroundTransparency = 1
+
+        Components.CreateLabel(
+            button,
+            Theme,
+            item.Label,
+            {
+                Name = "NavLabel",
+                Position = UDim2.fromOffset(39, 0),
+                Size = UDim2.new(1, -46, 1, 0),
+                TextColor3 = Theme.Colors.Muted,
+                TextSize = 11,
+            }
+        )
+
+        local indicator = Instance.new("Frame")
+        indicator.Name = "ActiveIndicator"
+        indicator.Size = UDim2.fromOffset(3, 17)
+        indicator.Position = UDim2.new(1, -4, 0.5, -8)
+        indicator.BackgroundColor3 = Theme.Colors.Primary
+        indicator.BorderSizePixel = 0
+        indicator.Visible = false
+        indicator.Parent = button
+
+        local indicatorCorner = Instance.new("UICorner")
+        indicatorCorner.CornerRadius = UDim.new(1, 0)
+        indicatorCorner.Parent = indicator
+
         navigationButtons[item.Name] = button
     end
+
+    -- Sidebar footer
+    local footerDivider = Instance.new("Frame")
+    footerDivider.Name = "FooterDivider"
+    footerDivider.Position = UDim2.new(0, 16, 1, -46)
+    footerDivider.Size = UDim2.new(1, -32, 0, 1)
+    footerDivider.BackgroundColor3 = Theme.Colors.Border
+    footerDivider.BorderSizePixel = 0
+    footerDivider.Parent = sidebar
+
+    Components.CreateLabel(sidebar, Theme, "NYU STUDIO", {
+        Name = "FooterBrand",
+        Position = UDim2.new(0, 17, 1, -38),
+        Size = UDim2.new(1, -30, 0, 20),
+        Font = Enum.Font.GothamBold,
+        TextSize = 9,
+        TextColor3 = Theme.Colors.Muted,
+    })
 
     -- Floating bar
     floatingBar = Instance.new("TextButton")
     floatingBar.Name = "FloatingBar"
-    floatingBar.Size = UDim2.fromOffset(260, 54)
-    floatingBar.Position = UDim2.new(0.5, -130, 0, 18)
+    floatingBar.Size = UDim2.fromOffset(230, 52)
+    floatingBar.Position = UDim2.new(0.5, -115, 0, 18)
     floatingBar.BackgroundColor3 = Theme.Colors.Surface
-    floatingBar.BackgroundTransparency = 0
     floatingBar.BorderSizePixel = 0
     floatingBar.Text = ""
     floatingBar.AutoButtonColor = false
@@ -694,64 +806,64 @@ function Window.Create(options)
     floatingBar.Active = true
     floatingBar.ZIndex = 5
 
-    local barCorner = Instance.new("UICorner")
-    barCorner.CornerRadius = UDim.new(0, 27)
-    barCorner.Parent = floatingBar
+    local floatingCorner = Instance.new("UICorner")
+    floatingCorner.CornerRadius = UDim.new(0, 14)
+    floatingCorner.Parent = floatingBar
 
-    local barStroke = Instance.new("UIStroke")
-    barStroke.Color = Theme.Colors.Border
-    barStroke.Thickness = 1
-    barStroke.Parent = floatingBar
+    local floatingStroke = Instance.new("UIStroke")
+    floatingStroke.Color = Theme.Colors.Border
+    floatingStroke.Thickness = 1
+    floatingStroke.Parent = floatingBar
 
-    local logo = Instance.new("Frame")
-    logo.Name = "Logo"
-    logo.Position = UDim2.fromOffset(12, 12)
-    logo.Size = UDim2.fromOffset(30, 30)
-    logo.BackgroundColor3 = Theme.Colors.Primary
-    logo.BorderSizePixel = 0
-    logo.ZIndex = 6
-    logo.Parent = floatingBar
+    local floatingLogo = Instance.new("Frame")
+    floatingLogo.Name = "Logo"
+    floatingLogo.Position = UDim2.fromOffset(11, 11)
+    floatingLogo.Size = UDim2.fromOffset(30, 30)
+    floatingLogo.BackgroundColor3 = Theme.Colors.Primary
+    floatingLogo.BorderSizePixel = 0
+    floatingLogo.ZIndex = 6
+    floatingLogo.Parent = floatingBar
 
-    local logoCorner = Instance.new("UICorner")
-    logoCorner.CornerRadius = UDim.new(1, 0)
-    logoCorner.Parent = logo
+    local floatingLogoCorner = Instance.new("UICorner")
+    floatingLogoCorner.CornerRadius = UDim.new(0, 8)
+    floatingLogoCorner.Parent = floatingLogo
 
-    local logoText = Instance.new("TextLabel")
-    logoText.Name = "LogoText"
-    logoText.Size = UDim2.fromScale(1, 1)
-    logoText.BackgroundTransparency = 1
-    logoText.Text = "N"
-    logoText.TextColor3 = Theme.Colors.ButtonText
-    logoText.Font = Enum.Font.GothamBold
-    logoText.TextSize = 16
-    logoText.ZIndex = 7
-    logoText.Parent = logo
+    local floatingLogoText = Instance.new("TextLabel")
+    floatingLogoText.Name = "LogoText"
+    floatingLogoText.Size = UDim2.fromScale(1, 1)
+    floatingLogoText.BackgroundTransparency = 1
+    floatingLogoText.Text = "N"
+    floatingLogoText.TextColor3 = Theme.Colors.ButtonText
+    floatingLogoText.Font = Enum.Font.GothamBold
+    floatingLogoText.TextSize = 16
+    floatingLogoText.ZIndex = 7
+    floatingLogoText.Parent = floatingLogo
 
-    local barTitle = Instance.new("TextLabel")
-    barTitle.Name = "HubName"
-    barTitle.Position = UDim2.fromOffset(52, 9)
-    barTitle.Size = UDim2.new(1, -64, 0, 20)
-    barTitle.BackgroundTransparency = 1
-    barTitle.Text = "NYU HUB"
-    barTitle.TextColor3 = Theme.Colors.Text
-    barTitle.Font = Enum.Font.GothamBold
-    barTitle.TextSize = 13
-    barTitle.TextXAlignment = Enum.TextXAlignment.Left
-    barTitle.ZIndex = 6
-    barTitle.Parent = floatingBar
+    local floatingTitle = Instance.new("TextLabel")
+    floatingTitle.Name = "HubName"
+    floatingTitle.Position = UDim2.fromOffset(50, 8)
+    floatingTitle.Size = UDim2.new(1, -60, 0, 19)
+    floatingTitle.BackgroundTransparency = 1
+    floatingTitle.Text = "NYU HUB"
+    floatingTitle.TextColor3 = Theme.Colors.Text
+    floatingTitle.Font = Enum.Font.GothamBold
+    floatingTitle.TextSize = 12
+    floatingTitle.TextXAlignment = Enum.TextXAlignment.Left
+    floatingTitle.ZIndex = 6
+    floatingTitle.Parent = floatingBar
 
-    local barVersion = Instance.new("TextLabel")
-    barVersion.Name = "Version"
-    barVersion.Position = UDim2.fromOffset(52, 28)
-    barVersion.Size = UDim2.new(1, -64, 0, 15)
-    barVersion.BackgroundTransparency = 1
-    barVersion.Text = versionText
-    barVersion.TextColor3 = Theme.Colors.Muted
-    barVersion.Font = Enum.Font.Gotham
-    barVersion.TextSize = 10
-    barVersion.TextXAlignment = Enum.TextXAlignment.Left
-    barVersion.ZIndex = 6
-    barVersion.Parent = floatingBar
+    local floatingVersion = Instance.new("TextLabel")
+    floatingVersion.Name = "Version"
+    floatingVersion.Position = UDim2.fromOffset(50, 27)
+    floatingVersion.Size = UDim2.new(1, -60, 0, 14)
+    floatingVersion.BackgroundTransparency = 1
+    floatingVersion.Text = versionText .. "  ·  Click to open"
+    floatingVersion.TextColor3 = Theme.Colors.Muted
+    floatingVersion.Font = Enum.Font.Gotham
+    floatingVersion.TextSize = 9
+    floatingVersion.TextXAlignment = Enum.TextXAlignment.Left
+    floatingVersion.ZIndex = 6
+    floatingVersion.Parent = floatingBar
 
     floatingBar.Parent = screenGui
 
@@ -809,13 +921,13 @@ function Window.Create(options)
         end
 
         if interaction.Mode == "drag" then
-            local startPos = interaction.StartPosition
+            local startPosition = interaction.StartPosition
 
             interaction.Target.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
             )
         elseif interaction.Mode == "resize" then
             local startSize = interaction.StartSize
@@ -851,20 +963,23 @@ function Window.Create(options)
     resizeHandle.Name = "ResizeHandle"
     resizeHandle.Size = UDim2.fromOffset(22, 22)
     resizeHandle.Position = UDim2.new(1, -22, 1, -22)
-    resizeHandle.BackgroundColor3 = Theme.Colors.Surface
+    resizeHandle.BackgroundColor3 = Theme.Colors.SurfaceActive
     resizeHandle.Text = "↘"
-    resizeHandle.TextColor3 = Theme.Colors.Text
-    resizeHandle.TextSize = 13
+    resizeHandle.TextColor3 = Theme.Colors.Muted
+    resizeHandle.TextSize = 12
     resizeHandle.BorderSizePixel = 0
     resizeHandle.AutoButtonColor = false
     resizeHandle.ZIndex = 10
     resizeHandle.Parent = root
 
+    local resizeCorner = Instance.new("UICorner")
+    resizeCorner.CornerRadius = UDim.new(0, 5)
+    resizeCorner.Parent = resizeHandle
+
     resizeHandle.InputBegan:Connect(function(input)
         beginInteraction(input, root, "resize")
     end)
 
-    -- Open the main window from the floating bar.
     floatingBar.Activated:Connect(function()
         if wasDragged then
             return
@@ -875,6 +990,7 @@ function Window.Create(options)
     end)
 
     screenGui.Parent = playerGui
+
     showPage("Home")
 
     return {
@@ -895,17 +1011,9 @@ end
 
 -- ===== MODULE: ui.pages.home =====
 __factories["ui.pages.home"] = function()
-
---[[
-    NYU HUB
-    File: ui/pages/home.lua
-    Description: Konten dashboard Home.
-]]
-
 local Home = {}
 
-function Home.Render(parent, theme, components, gameInfo)
-    -- Bersihkan konten Home sebelumnya.
+function Home.Render(parent, theme, components, gameInfo, gameModule)
     for _, child in ipairs(parent:GetChildren()) do
         if child.Name == "HomeContent" then
             child:Destroy()
@@ -914,97 +1022,180 @@ function Home.Render(parent, theme, components, gameInfo)
 
     local container = components.CreateFrame(parent, theme, {
         Name = "HomeContent",
-        Position = UDim2.fromOffset(20, 58),
-        Size = UDim2.new(1, -40, 1, -78),
+        Position = UDim2.fromOffset(20, 76),
+        Size = UDim2.new(1, -40, 1, -92),
         BackgroundTransparency = 1,
+        CornerRadius = 0,
     })
 
-    local function createInfoCard(name, title, value, position)
+    local function createCard(name, position, size)
         local card = components.CreateFrame(container, theme, {
             Name = name,
             Position = position,
-            Size = UDim2.new(0.5, -6, 0, 100),
+            Size = size,
             BackgroundColor3 = theme.Colors.Surface,
+            CornerRadius = theme.Sizes.CardRadius,
         })
 
         components.CreateStroke(card, theme)
 
-        components.CreateLabel(card, theme, title, {
-            Name = "CardTitle",
-            Position = UDim2.fromOffset(14, 12),
-            Size = UDim2.new(1, -28, 0, 22),
-            TextColor3 = theme.Colors.Muted,
-            TextSize = 12,
-        })
-
-        local valueLabel = components.CreateLabel(card, theme, value, {
-            Name = "CardValue",
-            Position = UDim2.fromOffset(14, 39),
-            Size = UDim2.new(1, -28, 0, 34),
-            Font = Enum.Font.GothamBold,
-            TextSize = 17,
-            TextWrapped = true,
-        })
-
-        return valueLabel
+        return card
     end
 
-    local detectedGame = "Tidak terdeteksi"
-    local gameStatus = "Belum dikonfigurasi"
+    local detectedGame = "Unknown game"
+    local supported = false
 
     if type(gameInfo) == "table" then
         if type(gameInfo.Name) == "string" then
             detectedGame = gameInfo.Name
         end
 
-        if gameInfo.Enabled == true then
-            gameStatus = "Didukung"
-        else
-            gameStatus = "Belum aktif"
+        supported = gameInfo.Enabled == true
+    end
+
+    local featureCount = 0
+
+    if type(gameModule) == "table"
+        and type(gameModule.GetFeatures) == "function" then
+
+        local success, features = pcall(gameModule.GetFeatures)
+
+        if success and type(features) == "table" then
+            featureCount = #features
         end
     end
 
-    createInfoCard(
+    -- Current game card
+    local gameCard = createCard(
         "GameCard",
-        "GAME TERDETEKSI",
-        detectedGame,
-        UDim2.fromOffset(0, 0)
+        UDim2.fromOffset(0, 0),
+        UDim2.new(1, 0, 0, 116)
     )
 
-    createInfoCard(
-        "StatusCard",
-        "STATUS GAME",
-        gameStatus,
-        UDim2.new(0.5, 6, 0, 0)
-    )
-
-    local welcome = components.CreateFrame(container, theme, {
-        Name = "WelcomeCard",
-        Position = UDim2.fromOffset(0, 116),
-        Size = UDim2.new(1, 0, 0, 112),
-        BackgroundColor3 = theme.Colors.Surface,
+    components.CreateLabel(gameCard, theme, "CURRENT EXPERIENCE", {
+        Name = "SectionLabel",
+        Position = UDim2.fromOffset(16, 13),
+        Size = UDim2.new(1, -32, 0, 16),
+        Font = Enum.Font.GothamBold,
+        TextSize = 9,
+        TextColor3 = theme.Colors.Muted,
     })
 
-    components.CreateStroke(welcome, theme)
-
-    components.CreateLabel(welcome, theme, "Welcome to NYU HUB", {
-        Name = "WelcomeTitle",
-        Position = UDim2.fromOffset(16, 14),
-        Size = UDim2.new(1, -32, 0, 26),
+    components.CreateLabel(gameCard, theme, detectedGame, {
+        Name = "GameName",
+        Position = UDim2.fromOffset(16, 35),
+        Size = UDim2.new(1, -32, 0, 28),
         Font = Enum.Font.GothamBold,
-        TextSize = 16,
+        TextSize = 17,
+        TextWrapped = true,
+    })
+
+    local statusPill = components.CreateFrame(gameCard, theme, {
+        Name = "GameStatus",
+        Position = UDim2.fromOffset(16, 76),
+        Size = UDim2.fromOffset(112, 25),
+        BackgroundColor3 = theme.Colors.SurfaceActive,
+        CornerRadius = 6,
+    })
+
+    local statusText = supported and "Supported" or "Not supported"
+
+    components.CreateLabel(statusPill, theme, statusText, {
+        Name = "StatusText",
+        Position = UDim2.fromOffset(8, 0),
+        Size = UDim2.new(1, -16, 1, 0),
+        TextSize = 10,
+        TextColor3 = supported
+            and theme.Colors.Text
+            or theme.Colors.Muted,
+        TextXAlignment = Enum.TextXAlignment.Center,
+    })
+
+    -- Summary cards
+    local summaryY = 128
+    local gap = 10
+
+    local summaryWidth = (container.AbsoluteSize.X - gap) / 2
+    if summaryWidth <= 0 then
+        summaryWidth = 250
+    end
+
+    local featureCard = createCard(
+        "FeatureSummary",
+        UDim2.fromOffset(0, summaryY),
+        UDim2.new(0.5, -5, 0, 84)
+    )
+
+    components.CreateLabel(featureCard, theme, "AVAILABLE FEATURES", {
+        Name = "SummaryTitle",
+        Position = UDim2.fromOffset(14, 12),
+        Size = UDim2.new(1, -28, 0, 16),
+        TextSize = 9,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = theme.Colors.Muted,
+    })
+
+    components.CreateLabel(featureCard, theme, tostring(featureCount), {
+        Name = "FeatureCount",
+        Position = UDim2.fromOffset(14, 32),
+        Size = UDim2.new(1, -28, 0, 34),
+        Font = Enum.Font.GothamBold,
+        TextSize = 23,
+    })
+
+    local versionCard = createCard(
+        "VersionSummary",
+        UDim2.new(0.5, 5, 0, summaryY),
+        UDim2.new(0.5, -5, 0, 84)
+    )
+
+    components.CreateLabel(versionCard, theme, "HUB VERSION", {
+        Name = "SummaryTitle",
+        Position = UDim2.fromOffset(14, 12),
+        Size = UDim2.new(1, -28, 0, 16),
+        TextSize = 9,
+        Font = Enum.Font.GothamBold,
+        TextColor3 = theme.Colors.Muted,
     })
 
     components.CreateLabel(
-        welcome,
+        versionCard,
         theme,
-        "Your game scripts and available features will be managed here.",
+        "NYU HUB",
         {
-            Name = "WelcomeDescription",
-            Position = UDim2.fromOffset(16, 44),
-            Size = UDim2.new(1, -32, 0, 44),
+            Name = "HubName",
+            Position = UDim2.fromOffset(14, 32),
+            Size = UDim2.new(1, -28, 0, 30),
+            Font = Enum.Font.GothamBold,
+            TextSize = 18,
+        }
+    )
+
+    -- Welcome / information panel
+    local infoCard = createCard(
+        "InfoCard",
+        UDim2.fromOffset(0, 222),
+        UDim2.new(1, 0, 0, 74)
+    )
+
+    components.CreateLabel(infoCard, theme, "Workspace", {
+        Name = "InfoTitle",
+        Position = UDim2.fromOffset(14, 11),
+        Size = UDim2.new(1, -28, 0, 20),
+        Font = Enum.Font.GothamBold,
+        TextSize = 12,
+    })
+
+    components.CreateLabel(
+        infoCard,
+        theme,
+        "Manage your available scripts and game features from one place.",
+        {
+            Name = "InfoDescription",
+            Position = UDim2.fromOffset(14, 34),
+            Size = UDim2.new(1, -28, 0, 28),
             TextColor3 = theme.Colors.Muted,
-            TextSize = 12,
+            TextSize = 10,
             TextWrapped = true,
         }
     )
@@ -1013,7 +1204,6 @@ function Home.Render(parent, theme, components, gameInfo)
 end
 
 return Home
-
 end
 
 -- ===== MODULE: ui.pages.features =====
@@ -1023,24 +1213,26 @@ local Features = {}
 function Features.Render(parent, theme, components, gameModule)
     local container = components.CreateFrame(parent, theme, {
         Name = "FeaturesContent",
-        Position = UDim2.fromOffset(20, 58),
-        Size = UDim2.new(1, -40, 1, -78),
+        Position = UDim2.fromOffset(20, 76),
+        Size = UDim2.new(1, -40, 1, -92),
         BackgroundTransparency = 1,
+        CornerRadius = 0,
     })
 
     if not gameModule or type(gameModule.GetFeatures) ~= "function" then
         components.CreateLabel(
             container,
             theme,
-            "Fitur untuk game ini belum tersedia.",
+            "No features are available for this game.",
             {
                 Name = "EmptyMessage",
                 Size = UDim2.new(1, 0, 0, 30),
-                TextSize = 13,
+                TextSize = 12,
+                TextColor3 = theme.Colors.Muted,
             }
         )
 
-        return
+        return container
     end
 
     local success, features = pcall(gameModule.GetFeatures)
@@ -1049,15 +1241,32 @@ function Features.Render(parent, theme, components, gameModule)
         components.CreateLabel(
             container,
             theme,
-            "Belum ada fitur yang tersedia.",
+            "No features are available yet.",
             {
                 Name = "EmptyMessage",
                 Size = UDim2.new(1, 0, 0, 30),
-                TextSize = 13,
+                TextSize = 12,
+                TextColor3 = theme.Colors.Muted,
             }
         )
 
-        return
+        return container
+    end
+
+    local function getFeatureState(featureName, fallback)
+        local ok, currentFeatures = pcall(gameModule.GetFeatures)
+
+        if not ok or type(currentFeatures) ~= "table" then
+            return fallback
+        end
+
+        for _, currentFeature in ipairs(currentFeatures) do
+            if currentFeature.Name == featureName then
+                return currentFeature.Enabled == true
+            end
+        end
+
+        return fallback
     end
 
     for index, feature in ipairs(features) do
@@ -1066,37 +1275,59 @@ function Features.Render(parent, theme, components, gameModule)
             Position = UDim2.fromOffset(0, (index - 1) * 82),
             Size = UDim2.new(1, 0, 0, 72),
             BackgroundColor3 = theme.Colors.Surface,
+            CornerRadius = theme.Sizes.CardRadius,
         })
 
         components.CreateStroke(card, theme)
 
-        components.CreateLabel(card, theme, feature.Name, {
+        local featureIcon = components.CreateFrame(card, theme, {
+            Name = "FeatureIcon",
+            Position = UDim2.fromOffset(12, 17),
+            Size = UDim2.fromOffset(36, 36),
+            BackgroundColor3 = theme.Colors.SurfaceActive,
+            CornerRadius = 8,
+        })
+
+        components.CreateLabel(featureIcon, theme, "◇", {
+            Name = "Icon",
+            Size = UDim2.fromScale(1, 1),
+            TextColor3 = theme.Colors.Text,
+            TextSize = 17,
+            TextXAlignment = Enum.TextXAlignment.Center,
+        })
+
+        components.CreateLabel(card, theme, feature.Name or "Unnamed feature", {
             Name = "FeatureName",
-            Position = UDim2.fromOffset(12, 8),
-            Size = UDim2.new(1, -150, 0, 22),
+            Position = UDim2.fromOffset(60, 12),
+            Size = UDim2.new(1, -205, 0, 20),
             Font = Enum.Font.GothamBold,
-            TextSize = 13,
-            TextXAlignment = Enum.TextXAlignment.Left,
+            TextSize = 12,
         })
 
-        components.CreateLabel(card, theme, feature.Description, {
-            Name = "FeatureDescription",
-            Position = UDim2.fromOffset(12, 32),
-            Size = UDim2.new(1, -150, 0, 24),
-            TextSize = 11,
-            TextColor3 = theme.Colors.Muted,
-            TextXAlignment = Enum.TextXAlignment.Left,
-        })
+        components.CreateLabel(
+            card,
+            theme,
+            feature.Description or "No description available.",
+            {
+                Name = "FeatureDescription",
+                Position = UDim2.fromOffset(60, 34),
+                Size = UDim2.new(1, -205, 0, 22),
+                TextSize = 10,
+                TextColor3 = theme.Colors.Muted,
+                TextWrapped = true,
+            }
+        )
 
-
+        local isEnabled = feature.Enabled == true
         local button
 
         button = components.CreateButton(
             card,
             theme,
-            feature.Enabled and "Nonaktifkan" or "Aktifkan",
+            isEnabled and "Nonaktifkan" or "Aktifkan",
             function()
                 if type(gameModule.ToggleWalkSpeed) ~= "function" then
+                    warn("[NYU HUB] Toggle handler tidak tersedia.")
                     return
                 end
 
@@ -1107,7 +1338,13 @@ function Features.Render(parent, theme, components, gameModule)
                     return
                 end
 
-                button.Text = message == "Lari cepat diaktifkan."
+                local actualState = getFeatureState(
+                    feature.Name,
+                    not isEnabled
+                )
+
+                isEnabled = actualState
+                button.Text = actualState
                     and "Nonaktifkan"
                     or "Aktifkan"
 
@@ -1117,10 +1354,19 @@ function Features.Render(parent, theme, components, gameModule)
                 Name = "ToggleButton",
                 Position = UDim2.new(1, -124, 0, 18),
                 Size = UDim2.fromOffset(112, 36),
-                TextSize = 11,
+                TextSize = 10,
+                CornerRadius = 7,
+                BackgroundColor3 = isEnabled
+                    and theme.Colors.SurfaceActive
+                    or theme.Colors.Primary,
+                TextColor3 = isEnabled
+                    and theme.Colors.Text
+                    or theme.Colors.ButtonText,
             }
         )
     end
+
+    return container
 end
 
 return Features
